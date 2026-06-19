@@ -1,0 +1,175 @@
+/* 스크린샷의 다크 테마를 재현 */
+:root {
+  --bg: #0c1117;
+  --panel: #11181f;
+  --card: #131b24;
+  --border: #1f2a36;
+  --green: #16a34a;
+  --green-dark: #15803d;
+  --green-glow: rgba(22, 163, 74, 0.5);
+  --text: #d7e0ea;
+  --muted: #6b7785;
+  --orange: #f59e0b;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Pretendard', -apple-system, 'Malgun Gothic', sans-serif;
+  font-size: 13px;
+}
+
+/* 탭 */
+.tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  background: var(--panel);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.tab {
+  flex: 1;
+  padding: 12px 6px;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 12px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+}
+.tab.active { color: var(--green); border-bottom-color: var(--green); }
+.count {
+  background: var(--green);
+  color: #fff;
+  border-radius: 10px;
+  padding: 0 6px;
+  font-size: 11px;
+}
+
+.panel { display: none; padding: 12px; }
+.panel.active { display: block; }
+
+/* 검색바 */
+.searchbar { display: flex; gap: 8px; margin-bottom: 10px; }
+.searchbar input {
+  flex: 1;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: var(--text);
+}
+.btn-green {
+  background: var(--green);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn-green:hover { background: var(--green-dark); }
+.btn-green.wide { width: 100%; }
+
+/* 툴바 */
+.toolbar { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; flex-wrap: wrap; }
+.muted { color: var(--muted); font-size: 12px; }
+.mini { width: 48px; background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 6px; color: var(--text); }
+.spacer { flex: 1; }
+.chip {
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+.chip.danger { color: #f87171; border-color: #7f1d1d; }
+.statusline { color: var(--muted); font-size: 11px; margin-bottom: 10px; }
+
+/* 필터 */
+.filters { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+.filter {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  border-radius: 20px;
+  padding: 6px 14px;
+  cursor: pointer;
+}
+.filter.active { color: var(--green); border-color: var(--green); }
+
+/* 키워드 리스트 */
+.list { display: flex; flex-direction: column; gap: 8px; }
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+}
+.row.selected { border-color: var(--green); box-shadow: 0 0 0 1px var(--green-glow); }
+.row input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--green); }
+.row .num { color: var(--muted); width: 18px; text-align: right; }
+.badge-new {
+  background: rgba(22,163,74,.15);
+  color: var(--green);
+  border: 1px solid var(--green);
+  border-radius: 4px;
+  font-size: 10px;
+  padding: 1px 5px;
+}
+.row .kw { flex: 1; }
+.badge-val {
+  background: rgba(245,158,11,.12);
+  color: var(--orange);
+  border: 1px solid rgba(245,158,11,.4);
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.row .time { color: var(--muted); font-size: 11px; }
+
+.empty { color: var(--muted); text-align: center; padding: 40px 10px; line-height: 1.6; }
+
+/* 하단바 */
+.bottombar {
+  position: sticky;
+  bottom: 0;
+  background: var(--bg);
+  padding-top: 12px;
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* 설정 폼 */
+.form fieldset { border: 1px solid var(--border); border-radius: 8px; margin: 0 0 14px; padding: 12px; }
+.form legend { color: var(--green); font-size: 12px; padding: 0 6px; }
+.form label { display: block; margin-bottom: 10px; color: var(--muted); font-size: 12px; }
+.form input {
+  display: block;
+  width: 100%;
+  margin-top: 4px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px;
+  color: var(--text);
+}
+.hint { color: var(--muted); font-size: 11px; }
+
+/* 예정 안내 */
+.todo { color: var(--text); line-height: 1.7; }
+.todo h3 { color: var(--green); }
+.todo ul { color: var(--muted); }
+.loglist .logitem { padding: 8px 0; border-bottom: 1px solid var(--border); }
