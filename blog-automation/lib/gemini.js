@@ -13,7 +13,7 @@ export async function generateArticle(keyword, settings) {
   }
   const model = geminiModel || 'gemini-2.5-flash';
 
-  const prompt = buildPrompt(keyword);
+  const prompt = buildPrompt(keyword, settings);
 
   const res = await fetch(`${BASE}/${model}:generateContent?key=${encodeURIComponent(geminiApiKey)}`, {
     method: 'POST',
@@ -48,20 +48,28 @@ export async function generateArticle(keyword, settings) {
   };
 }
 
-function buildPrompt(keyword) {
+function buildPrompt(keyword, settings = {}) {
+  const writeGuide = settings.writeGuide || '한국어 정보성 블로그 글을 자연스럽게 작성한다.';
+  const imagePromptGuide = settings.imagePromptGuide || '문단 분위기에 맞는 고화질 사진 스타일.';
+  const thumbnailGuide = settings.thumbnailGuide || '클릭을 유도하는 정사각형 썸네일.';
+
   return `너는 네이버 블로그 상위노출에 능한 한국어 블로그 작가다.
 아래 키워드로 정보성 블로그 글 1편을 작성해라.
 
 키워드: "${keyword}"
 
-작성 규칙:
-- 제목: 키워드를 자연스럽게 포함, 클릭하고 싶게 (30자 내외)
-- 본문: 한국어, 1500~2000자, 소제목(##)으로 4~6개 섹션 구성
-- 도입부에서 검색 의도를 짚고, 실질적이고 구체적인 정보 제공
-- 문단은 짧게, 가독성 좋게. 과장/허위 정보 금지
-- 마지막에 자연스러운 마무리 문단
-- 이미지 프롬프트 3개: [0]=썸네일용, [1],[2]=본문 삽입용.
-  제미나이 이미지 생성기에 바로 붙여넣을 수 있는 한국어 프롬프트.
+[글쓰기 지침]
+${writeGuide}
+
+[썸네일 작성 지침] (imagePrompts[0] 에 반영)
+${thumbnailGuide}
+
+[본문 이미지 프롬프트 지침] (imagePrompts[1], [2] 에 반영)
+${imagePromptGuide}
+
+출력 요구사항:
+- imagePrompts 는 정확히 3개: [0]=썸네일용, [1],[2]=본문 삽입용.
+- 각 이미지 프롬프트는 이미지 생성기에 바로 붙여넣을 수 있는 완성된 프롬프트로 작성.
 
 반드시 아래 JSON 형식으로만 출력:
 {

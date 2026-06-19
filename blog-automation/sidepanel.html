@@ -117,6 +117,35 @@
       </fieldset>
 
       <fieldset>
+        <legend>✍️ 글쓰기 지침</legend>
+        <p class="hint">포스팅 어조, 구성 등의 가이드라인을 입력하세요.</p>
+        <textarea id="writeGuide" rows="8"></textarea>
+      </fieldset>
+
+      <fieldset>
+        <legend>🖼️ 문단별 이미지 프롬프트 지침</legend>
+        <p class="hint">본문 이미지 프롬프트 생성 기준을 입력하세요.</p>
+        <textarea id="imagePromptGuide" rows="6"></textarea>
+      </fieldset>
+
+      <fieldset>
+        <legend>🎨 썸네일 작성 지침</legend>
+        <p class="hint">썸네일 문구, 분위기, 색감, 배치 기준을 입력하세요.</p>
+        <textarea id="thumbnailGuide" rows="6"></textarea>
+      </fieldset>
+
+      <fieldset>
+        <legend>이미지 생성 방식</legend>
+        <p class="hint">썸네일/이미지 생성에 사용할 방식 (생성 연결은 3단계 예정)</p>
+        <select id="imageApi">
+          <option value="manual">수동 — 제미나이 웹에서 생성 (비용 절약)</option>
+          <option value="imagen4fast">Imagen 4 Fast (약 31원/장)</option>
+          <option value="imagen4">Imagen 4 (고품질)</option>
+          <option value="nanobanana">Gemini 2.5 Flash Image (나노바나나)</option>
+        </select>
+      </fieldset>
+
+      <fieldset>
         <legend>키워드 선정 기준</legend>
         <label>최대 비율 (이하만 좋음) <input type="number" step="0.001" id="maxRatio" /></label>
         <label>최소 검색량 <input type="number" id="minVolume" /></label>

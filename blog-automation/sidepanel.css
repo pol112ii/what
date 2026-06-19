@@ -156,7 +156,7 @@ body {
 .form fieldset { border: 1px solid var(--border); border-radius: 8px; margin: 0 0 14px; padding: 12px; }
 .form legend { color: var(--green); font-size: 12px; padding: 0 6px; }
 .form label { display: block; margin-bottom: 10px; color: var(--muted); font-size: 12px; }
-.form input {
+.form input, .form textarea, .form select {
   display: block;
   width: 100%;
   margin-top: 4px;
@@ -165,6 +165,10 @@ body {
   border-radius: 6px;
   padding: 8px;
   color: var(--text);
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1.5;
+  resize: vertical;
 }
 .hint { color: var(--muted); font-size: 11px; }
 

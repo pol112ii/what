@@ -226,7 +226,8 @@ function copyText(text, btn) {
 // ---------- 설정 ----------
 async function loadSettings() {
   const s = await send('getSettings');
-  ['searchClientId','searchClientSecret','adApiKey','adSecretKey','adCustomerId','geminiApiKey','geminiModel','maxRatio','minVolume']
+  ['searchClientId','searchClientSecret','adApiKey','adSecretKey','adCustomerId','geminiApiKey','geminiModel',
+   'writeGuide','imagePromptGuide','thumbnailGuide','imageApi','maxRatio','minVolume']
     .forEach((id) => { if ($(`#${id}`)) $(`#${id}`).value = s[id] ?? ''; });
 }
 
@@ -239,6 +240,10 @@ $('#saveSettings').addEventListener('click', async () => {
     adCustomerId: $('#adCustomerId').value.trim(),
     geminiApiKey: $('#geminiApiKey').value.trim(),
     geminiModel: $('#geminiModel').value.trim() || 'gemini-2.5-flash',
+    writeGuide: $('#writeGuide').value,
+    imagePromptGuide: $('#imagePromptGuide').value,
+    thumbnailGuide: $('#thumbnailGuide').value,
+    imageApi: $('#imageApi').value,
     maxRatio: parseFloat($('#maxRatio').value) || 0.05,
     minVolume: parseInt($('#minVolume').value, 10) || 50,
   };
