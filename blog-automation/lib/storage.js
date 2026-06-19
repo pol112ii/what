@@ -13,6 +13,9 @@ const DEFAULT_SETTINGS = {
   adApiKey: '',
   adSecretKey: '',
   adCustomerId: '',
+  // 제미나이(Gemini) API — 본문/이미지 프롬프트 생성용
+  geminiApiKey: '',
+  geminiModel: 'gemini-2.5-flash',
   // 키워드 선정 기준 (경쟁력 = 문서수 / 검색량, 낮을수록 좋음)
   maxRatio: 0.05, // 이 비율 이하만 "괜찮은 키워드"로 표시
   minVolume: 50, // 월간 검색량 최소치

@@ -28,6 +28,7 @@ $$('.tab').forEach((tab) => {
     $(`#tab-${tab.dataset.tab}`).classList.add('active');
     if (tab.dataset.tab === 'analytics') loadWriteLog();
     if (tab.dataset.tab === 'settings') loadSettings();
+    if (tab.dataset.tab === 'write') populateWriteKeywords();
   });
 });
 
@@ -156,10 +157,76 @@ function render() {
   });
 }
 
+// ---------- 글쓰기(제미나이 본문 생성) ----------
+let lastGen = null; // 마지막 생성 결과
+
+function populateWriteKeywords() {
+  const sel = $('#writeKw');
+  // 선택된 키워드 우선, 없으면 전체. 경쟁력순으로 정렬해 노출.
+  const selected = keywords.filter((k) => k.selected);
+  const list = (selected.length ? selected : keywords)
+    .slice()
+    .sort((a, b) => (a.ratio ?? Infinity) - (b.ratio ?? Infinity));
+  sel.innerHTML = '<option value="">키워드를 선택하세요</option>' +
+    list.map((k) => `<option value="${escapeHtml(k.keyword)}">${escapeHtml(k.keyword)}${k.label ? ' · ' + k.label : ''}</option>`).join('');
+}
+
+$('#genBtn').addEventListener('click', async () => {
+  const kw = $('#writeKw').value;
+  if (!kw) return ($('#genMsg').textContent = '키워드를 먼저 선택하세요.');
+  const btn = $('#genBtn');
+  btn.disabled = true; btn.textContent = '생성 중...';
+  $('#genMsg').textContent = '제미나이가 본문을 작성하는 중...';
+  try {
+    const art = await send('generateArticle', { keyword: kw });
+    lastGen = art;
+    $('#genResult').style.display = 'block';
+    $('#genTitle').value = art.title || '';
+    $('#genBody').value = art.body || '';
+    renderImagePrompts(art.imagePrompts || []);
+    $('#genMsg').textContent = '생성 완료 ✓';
+    await send('logWrite', { keyword: kw });
+  } catch (e) {
+    $('#genMsg').textContent = '생성 실패: ' + e.message;
+  } finally {
+    btn.disabled = false; btn.textContent = '✨ 생성';
+  }
+});
+
+function renderImagePrompts(prompts) {
+  const box = $('#imgPrompts');
+  const labels = ['썸네일', '본문 이미지 1', '본문 이미지 2'];
+  box.innerHTML = prompts.map((p, i) => `
+    <div class="imgprompt">
+      <div class="imgprompt-label">${labels[i] || '이미지 ' + (i + 1)}</div>
+      <div class="imgprompt-text">${escapeHtml(p)}</div>
+      <button class="copybtn" data-copytext="${escapeHtml(p)}">복사</button>
+    </div>`).join('');
+  box.querySelectorAll('.copybtn').forEach((b) => {
+    b.addEventListener('click', () => copyText(b.dataset.copytext, b));
+  });
+}
+
+// 제목/본문 복사 버튼
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('.copybtn[data-copy]');
+  if (!b) return;
+  const map = { title: $('#genTitle').value, body: $('#genBody').value };
+  copyText(map[b.dataset.copy] || '', b);
+});
+
+function copyText(text, btn) {
+  navigator.clipboard.writeText(text).then(() => {
+    const old = btn.textContent;
+    btn.textContent = '복사됨 ✓';
+    setTimeout(() => (btn.textContent = old), 1200);
+  });
+}
+
 // ---------- 설정 ----------
 async function loadSettings() {
   const s = await send('getSettings');
-  ['searchClientId','searchClientSecret','adApiKey','adSecretKey','adCustomerId','maxRatio','minVolume']
+  ['searchClientId','searchClientSecret','adApiKey','adSecretKey','adCustomerId','geminiApiKey','geminiModel','maxRatio','minVolume']
     .forEach((id) => { if ($(`#${id}`)) $(`#${id}`).value = s[id] ?? ''; });
 }
 
@@ -170,6 +237,8 @@ $('#saveSettings').addEventListener('click', async () => {
     adApiKey: $('#adApiKey').value.trim(),
     adSecretKey: $('#adSecretKey').value.trim(),
     adCustomerId: $('#adCustomerId').value.trim(),
+    geminiApiKey: $('#geminiApiKey').value.trim(),
+    geminiModel: $('#geminiModel').value.trim() || 'gemini-2.5-flash',
     maxRatio: parseFloat($('#maxRatio').value) || 0.05,
     minVolume: parseInt($('#minVolume').value, 10) || 50,
   };

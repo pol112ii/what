@@ -1,0 +1,72 @@
+// 제미나이(Gemini) API 클라이언트.
+// 선택한 키워드로 네이버 블로그용 본문과 이미지 프롬프트를 생성한다.
+// 참고: https://ai.google.dev/api/generate-content
+
+const BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
+
+// 키워드 1개로 블로그 글(제목/본문/이미지 프롬프트)을 생성한다.
+// 반환: { title, body, imagePrompts: string[] }
+export async function generateArticle(keyword, settings) {
+  const { geminiApiKey, geminiModel } = settings;
+  if (!geminiApiKey) {
+    throw new Error('제미나이 API 키가 비어 있습니다. 설정 탭에서 입력하세요.');
+  }
+  const model = geminiModel || 'gemini-2.5-flash';
+
+  const prompt = buildPrompt(keyword);
+
+  const res = await fetch(`${BASE}/${model}:generateContent?key=${encodeURIComponent(geminiApiKey)}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: {
+        temperature: 0.9,
+        responseMimeType: 'application/json',
+      },
+    }),
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`제미나이 API 오류 ${res.status}: ${text}`);
+  }
+
+  const data = await res.json();
+  const raw = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+  let parsed;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    // JSON 파싱 실패 시 본문 전체를 body 로라도 반환
+    return { title: keyword, body: raw, imagePrompts: [] };
+  }
+  return {
+    title: parsed.title || keyword,
+    body: parsed.body || '',
+    imagePrompts: Array.isArray(parsed.imagePrompts) ? parsed.imagePrompts : [],
+  };
+}
+
+function buildPrompt(keyword) {
+  return `너는 네이버 블로그 상위노출에 능한 한국어 블로그 작가다.
+아래 키워드로 정보성 블로그 글 1편을 작성해라.
+
+키워드: "${keyword}"
+
+작성 규칙:
+- 제목: 키워드를 자연스럽게 포함, 클릭하고 싶게 (30자 내외)
+- 본문: 한국어, 1500~2000자, 소제목(##)으로 4~6개 섹션 구성
+- 도입부에서 검색 의도를 짚고, 실질적이고 구체적인 정보 제공
+- 문단은 짧게, 가독성 좋게. 과장/허위 정보 금지
+- 마지막에 자연스러운 마무리 문단
+- 이미지 프롬프트 3개: [0]=썸네일용, [1],[2]=본문 삽입용.
+  제미나이 이미지 생성기에 바로 붙여넣을 수 있는 한국어 프롬프트.
+
+반드시 아래 JSON 형식으로만 출력:
+{
+  "title": "제목",
+  "body": "마크다운 본문 (## 소제목 포함)",
+  "imagePrompts": ["썸네일 프롬프트", "본문이미지1 프롬프트", "본문이미지2 프롬프트"]
+}`;
+}

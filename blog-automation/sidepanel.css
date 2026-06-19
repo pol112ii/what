@@ -168,6 +168,46 @@ body {
 }
 .hint { color: var(--muted); font-size: 11px; }
 
+/* 글쓰기 탭 */
+.searchbar select {
+  flex: 1;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+  color: var(--text);
+}
+.genresult { margin-top: 12px; }
+.fieldlabel { display: flex; justify-content: space-between; align-items: center; color: var(--muted); font-size: 12px; margin: 12px 0 4px; }
+.genresult input, .genresult textarea {
+  width: 100%;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+  color: var(--text);
+  font-family: inherit;
+  resize: vertical;
+}
+.copybtn {
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--green);
+  border-radius: 6px;
+  padding: 3px 10px;
+  font-size: 11px;
+  cursor: pointer;
+}
+.imgprompt {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 8px;
+}
+.imgprompt-label { color: var(--green); font-size: 11px; margin-bottom: 4px; }
+.imgprompt-text { font-size: 12px; line-height: 1.5; margin-bottom: 8px; }
+
 /* 예정 안내 */
 .todo { color: var(--text); line-height: 1.7; }
 .todo h3 { color: var(--green); }

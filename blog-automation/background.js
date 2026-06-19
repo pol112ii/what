@@ -4,6 +4,7 @@
 import { getSettings, saveSettings, getState, saveState } from './lib/storage.js';
 import { scoreKeywords, filterGood } from './lib/competition.js';
 import { scrapeDataLab } from './lib/datalabCollector.js';
+import { generateArticle } from './lib/gemini.js';
 
 // 아이콘 클릭 시 사이드패널 열기
 chrome.action.onClicked.addListener(async (tab) => {
@@ -48,6 +49,12 @@ async function handle(msg) {
       const results = await scoreKeywords(msg.payload.keywords, settings);
       const state = await saveState({ keywords: results });
       return { results, good: filterGood(results, settings), state };
+    }
+
+    case 'generateArticle': {
+      // 키워드 1개로 제미나이가 본문 + 이미지 프롬프트 생성
+      const settings = await getSettings();
+      return generateArticle(msg.payload.keyword, settings);
     }
 
     case 'logWrite': {
