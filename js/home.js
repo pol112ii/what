@@ -7,6 +7,7 @@ const remainingEl = document.getElementById('remaining');
 const remainingBox = document.getElementById('remainingBox');
 const remainingLabel = document.getElementById('remainingLabel');
 const barFill = document.getElementById('barFill');
+const gaugePercent = document.getElementById('gaugePercent');
 const listEl = document.getElementById('list');
 const todayEl = document.getElementById('today');
 const eatenSummary = document.getElementById('eatenSummary');
@@ -25,14 +26,14 @@ function render() {
 
   goalEl.value = goal;
   todayEl.textContent = Store.todayLabel();
-  remainingEl.textContent = remaining;
+  remainingEl.textContent = remaining.toLocaleString();
   remainingBox.classList.toggle('over', remaining < 0);
   remainingLabel.textContent = remaining < 0 ? '초과 칼로리' : '남은 칼로리';
   eatenSummary.textContent = `먹은 칼로리 ${eaten.toLocaleString()} kcal`;
 
-  const percent = goal > 0 ? Math.min((eaten / goal) * 100, 100) : 0;
-  barFill.style.width = percent + '%';
-  barFill.style.background = remaining < 0 ? '#e53935' : '#4caf50';
+  const ratio = goal > 0 ? (eaten / goal) * 100 : 0;
+  barFill.style.width = Math.min(ratio, 100) + '%';
+  gaugePercent.textContent = Math.round(ratio) + '% 섭취';
 
   if (state.items.length === 0) {
     listEl.innerHTML = '<div class="empty">아직 먹은 게 없어요 🍽️</div>';
