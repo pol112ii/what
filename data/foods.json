@@ -1,0 +1,22 @@
+[
+  { "name": "흰쌀밥", "per100g": 130, "category": "밥" },
+  { "name": "현미밥", "per100g": 112, "category": "밥" },
+  { "name": "닭가슴살", "per100g": 165, "category": "단백질" },
+  { "name": "삶은 계란", "per100g": 155, "category": "단백질" },
+  { "name": "두부", "per100g": 84, "category": "단백질" },
+  { "name": "연어", "per100g": 208, "category": "단백질" },
+  { "name": "소고기(살코기)", "per100g": 250, "category": "단백질" },
+  { "name": "돼지고기(삼겹살)", "per100g": 331, "category": "단백질" },
+  { "name": "고구마", "per100g": 128, "category": "탄수화물" },
+  { "name": "오트밀", "per100g": 68, "category": "곡물" },
+  { "name": "식빵", "per100g": 265, "category": "빵" },
+  { "name": "김밥", "per100g": 150, "category": "분식" },
+  { "name": "바나나", "per100g": 89, "category": "과일" },
+  { "name": "사과", "per100g": 52, "category": "과일" },
+  { "name": "아보카도", "per100g": 160, "category": "과일" },
+  { "name": "우유", "per100g": 65, "category": "유제품" },
+  { "name": "그릭요거트", "per100g": 59, "category": "유제품" },
+  { "name": "브로콜리", "per100g": 34, "category": "채소" },
+  { "name": "방울토마토", "per100g": 18, "category": "채소" },
+  { "name": "김치", "per100g": 15, "category": "반찬" }
+]

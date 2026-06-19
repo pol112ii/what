@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#4caf50">
+<title>칼로리 체크</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9440982975556344" crossorigin="anonymous"></script>
+</head>
+<body>
+<main class="app">
+  <header class="app-header">
+    <h1>🔎 칼로리 체크</h1>
+  </header>
+  <p class="section-desc">음식을 검색하고 무게(g)를 입력하면 칼로리가 계산돼요</p>
+
+  <div class="search-box">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="searchInput" placeholder="예: 흰쌀밥" autocomplete="off">
+  </div>
+
+  <ul id="foodResults" class="food-results" aria-label="음식 검색 결과"></ul>
+
+  <section id="calcCard" class="calc-card hidden" aria-label="칼로리 계산">
+    <div class="calc-row">
+      <div class="calc-selected" id="calcSelected"></div>
+      <div class="calc-input-wrap">
+        <input type="number" id="gramInput" placeholder="150" inputmode="numeric" min="0" aria-label="무게(g)">
+        <span class="unit">g</span>
+      </div>
+    </div>
+    <div class="calc-result" aria-live="polite">
+      <span class="calc-kcal" id="calcKcal">0</span> kcal
+    </div>
+    <button id="calcAddBtn" type="button" class="calc-add-btn" disabled>오늘 기록에 추가하기</button>
+  </section>
+</main>
+
+<div id="toast" class="toast" role="status"></div>
+
+<nav class="tab-bar" aria-label="메뉴">
+  <div class="tab-bar-inner">
+    <a href="index.html" class="tab-item"><span class="tab-icon">🏠</span>홈</a>
+    <a href="search.html" class="tab-item active"><span class="tab-icon">🔎</span>칼로리 체크</a>
+    <a href="foods.html" class="tab-item"><span class="tab-icon">🍚</span>음식 관리</a>
+  </div>
+</nav>
+
+<aside class="ad-banner" aria-label="광고">
+  <ins class="adsbygoogle"
+       style="display:block"
+       data-ad-client="ca-pub-9440982975556344"
+       data-ad-slot="[슬롯번호]"
+       data-ad-format="auto"
+       data-full-width-responsive="true"></ins>
+  <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+</aside>
+
+<script src="js/store.js"></script>
+<script src="js/foodStore.js"></script>
+<script src="js/search.js"></script>
+</body>
+</html>

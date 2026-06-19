@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#4caf50">
+<title>음식 관리</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9440982975556344" crossorigin="anonymous"></script>
+</head>
+<body>
+<main class="app">
+  <header class="app-header">
+    <h1>🍚 음식 관리</h1>
+  </header>
+  <p class="section-desc">음식과 100g당 칼로리를 저장해두면 칼로리 체크에서 검색할 수 있어요</p>
+
+  <section class="food-form" aria-label="음식 추가">
+    <input type="text" id="ffName" class="ff-name" placeholder="음식 이름" maxlength="30">
+    <input type="number" id="ffCal" class="ff-cal" placeholder="kcal/100g" inputmode="numeric" min="0">
+    <input type="text" id="ffCat" class="ff-cat" placeholder="분류 (선택)" maxlength="20">
+  </section>
+  <p class="food-form-hint">※ 칼로리는 100g 기준 평균값으로 입력하세요 (예: 흰쌀밥 130)</p>
+  <button id="foodAddBtn" type="button" class="food-add-btn">＋ 음식 추가</button>
+
+  <h2 class="list-title" id="foodCount">등록된 음식</h2>
+  <ul id="manageList" class="manage-list"></ul>
+</main>
+
+<nav class="tab-bar" aria-label="메뉴">
+  <div class="tab-bar-inner">
+    <a href="index.html" class="tab-item"><span class="tab-icon">🏠</span>홈</a>
+    <a href="search.html" class="tab-item"><span class="tab-icon">🔎</span>칼로리 체크</a>
+    <a href="foods.html" class="tab-item active"><span class="tab-icon">🍚</span>음식 관리</a>
+  </div>
+</nav>
+
+<aside class="ad-banner" aria-label="광고">
+  <ins class="adsbygoogle"
+       style="display:block"
+       data-ad-client="ca-pub-9440982975556344"
+       data-ad-slot="[슬롯번호]"
+       data-ad-format="auto"
+       data-full-width-responsive="true"></ins>
+  <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+</aside>
+
+<script src="js/foodStore.js"></script>
+<script src="js/foods.js"></script>
+</body>
+</html>

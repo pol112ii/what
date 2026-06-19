@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#4caf50">
+<title>오늘의 칼로리</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9440982975556344" crossorigin="anonymous"></script>
+</head>
+<body>
+<main class="app">
+  <header class="app-header">
+    <h1>🍽️ 오늘의 칼로리</h1>
+    <p class="today" id="today">날짜</p>
+  </header>
+
+  <section class="goal-row" aria-label="목표 칼로리 설정">
+    <span>목표</span>
+    <input type="number" id="goal" value="2000" min="0" inputmode="numeric" aria-label="목표 칼로리">
+    <span>kcal</span>
+  </section>
+
+  <section class="remaining" id="remainingBox" aria-live="polite">
+    <div class="num" id="remaining">2000</div>
+    <div class="label" id="remainingLabel">남은 칼로리</div>
+  </section>
+
+  <div class="bar" role="progressbar" aria-label="칼로리 진행률">
+    <div class="bar-fill" id="barFill"></div>
+  </div>
+
+  <p class="eaten-summary" id="eatenSummary">먹은 칼로리 0 kcal</p>
+
+  <section class="input-row" aria-label="칼로리 직접 추가">
+    <input type="text" id="nameInput" placeholder="음식 이름 (선택)" maxlength="20">
+    <input type="number" id="calInput" placeholder="kcal" inputmode="numeric" min="0" aria-label="먹은 칼로리">
+    <button id="addBtn" type="button">추가</button>
+  </section>
+
+  <section class="quick-add" aria-label="빠른 추가">
+    <button type="button" data-cal="100">+100</button>
+    <button type="button" data-cal="200">+200</button>
+    <button type="button" data-cal="300">+300</button>
+    <button type="button" data-cal="500">+500</button>
+  </section>
+
+  <h2 class="list-title">오늘의 기록</h2>
+  <ul id="list" class="meal-list"></ul>
+
+  <button id="resetBtn" type="button" class="reset-btn">오늘 기록 모두 지우기</button>
+</main>
+
+<nav class="tab-bar" aria-label="메뉴">
+  <div class="tab-bar-inner">
+    <a href="index.html" class="tab-item active"><span class="tab-icon">🏠</span>홈</a>
+    <a href="search.html" class="tab-item"><span class="tab-icon">🔎</span>칼로리 체크</a>
+    <a href="foods.html" class="tab-item"><span class="tab-icon">🍚</span>음식 관리</a>
+  </div>
+</nav>
+
+<aside class="ad-banner" aria-label="광고">
+  <ins class="adsbygoogle"
+       style="display:block"
+       data-ad-client="ca-pub-9440982975556344"
+       data-ad-slot="[슬롯번호]"
+       data-ad-format="auto"
+       data-full-width-responsive="true"></ins>
+  <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+</aside>
+
+<script src="js/store.js"></script>
+<script src="js/home.js"></script>
+</body>
+</html>
