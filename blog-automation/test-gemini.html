@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>2단계 테스트 — 제미나이 본문 생성</title>
+<style>
+  :root{--bg:#0c1117;--card:#131b24;--border:#1f2a36;--green:#16a34a;--text:#d7e0ea;--muted:#6b7785;--orange:#f59e0b;}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,'Malgun Gothic',sans-serif;font-size:14px;line-height:1.6}
+  .wrap{max-width:760px;margin:0 auto;padding:24px}
+  h1{color:var(--green);font-size:20px}
+  .desc{color:var(--muted);font-size:13px;margin-bottom:20px}
+  label{display:block;color:var(--muted);font-size:12px;margin:12px 0 4px}
+  input,select,textarea{width:100%;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-family:inherit;font-size:14px}
+  textarea{resize:vertical}
+  .row{display:flex;gap:10px}
+  .row>div{flex:1}
+  button{background:var(--green);color:#fff;border:none;border-radius:8px;padding:12px 18px;font-weight:600;cursor:pointer;font-size:14px;margin-top:16px}
+  button:disabled{opacity:.5}
+  .result{margin-top:24px;display:none}
+  .fieldhead{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:12px;margin:16px 0 4px}
+  .copybtn{background:var(--card);border:1px solid var(--border);color:var(--green);border-radius:6px;padding:3px 10px;font-size:11px;cursor:pointer;margin:0}
+  .imgprompt{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px}
+  .imgprompt .l{color:var(--green);font-size:11px;margin-bottom:4px}
+  .msg{color:var(--orange);font-size:13px;margin-top:10px;min-height:18px}
+  .hint{color:var(--muted);font-size:11px}
+  a{color:var(--green)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>✨ 2단계 테스트 — 제미나이 본문 생성</h1>
+  <p class="desc">확장 프로그램 설치 없이, 제미나이 본문 생성이 잘 되는지 바로 확인하는 단독 페이지입니다.<br>
+  (확장 프로그램의 <code>lib/gemini.js</code> 와 동일한 프롬프트/로직)</p>
+
+  <label>제미나이 API Key
+    <input id="key" type="password" placeholder="aistudio.google.com/apikey 에서 발급" />
+  </label>
+  <p class="hint">키는 이 페이지(브라우저)에만 머물고 어디에도 전송되지 않습니다. (구글 API 호출에만 사용)</p>
+
+  <div class="row">
+    <div>
+      <label>모델
+        <select id="model">
+          <option value="gemini-2.5-flash">gemini-2.5-flash (빠름·저렴)</option>
+          <option value="gemini-2.5-pro">gemini-2.5-pro (고품질)</option>
+          <option value="gemini-2.0-flash">gemini-2.0-flash</option>
+        </select>
+      </label>
+    </div>
+    <div>
+      <label>키워드
+        <input id="kw" type="text" placeholder="예: 짚뽑닭발" />
+      </label>
+    </div>
+  </div>
+
+  <button id="gen">본문 생성</button>
+  <div class="msg" id="msg"></div>
+
+  <div class="result" id="result">
+    <div class="fieldhead">제목 <button class="copybtn" data-c="title">복사</button></div>
+    <input id="title" type="text" />
+
+    <div class="fieldhead">본문 <button class="copybtn" data-c="body">복사</button></div>
+    <textarea id="body" rows="16"></textarea>
+
+    <div class="fieldhead">🖼️ 이미지 프롬프트 (제미나이에 붙여넣어 생성)</div>
+    <div id="imgs"></div>
+  </div>
+</div>
+
+<script>
+const $ = (s) => document.querySelector(s);
+
+function buildPrompt(keyword){
+  return `너는 네이버 블로그 상위노출에 능한 한국어 블로그 작가다.
+아래 키워드로 정보성 블로그 글 1편을 작성해라.
+
+키워드: "${keyword}"
+
+작성 규칙:
+- 제목: 키워드를 자연스럽게 포함, 클릭하고 싶게 (30자 내외)
+- 본문: 한국어, 1500~2000자, 소제목(##)으로 4~6개 섹션 구성
+- 도입부에서 검색 의도를 짚고, 실질적이고 구체적인 정보 제공
+- 문단은 짧게, 가독성 좋게. 과장/허위 정보 금지
+- 마지막에 자연스러운 마무리 문단
+- 이미지 프롬프트 3개: [0]=썸네일용, [1],[2]=본문 삽입용.
+  제미나이 이미지 생성기에 바로 붙여넣을 수 있는 한국어 프롬프트.
+
+반드시 아래 JSON 형식으로만 출력:
+{
+  "title": "제목",
+  "body": "마크다운 본문 (## 소제목 포함)",
+  "imagePrompts": ["썸네일 프롬프트", "본문이미지1 프롬프트", "본문이미지2 프롬프트"]
+}`;
+}
+
+async function generate(keyword, key, model){
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`;
+  const res = await fetch(url, {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      contents:[{parts:[{text: buildPrompt(keyword)}]}],
+      generationConfig:{ temperature:0.9, responseMimeType:'application/json' }
+    })
+  });
+  if(!res.ok){ throw new Error(`${res.status}: ${await res.text()}`); }
+  const data = await res.json();
+  const raw = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+  try { return JSON.parse(raw); }
+  catch { return { title: keyword, body: raw, imagePrompts: [] }; }
+}
+
+$('#gen').addEventListener('click', async () => {
+  const key = $('#key').value.trim();
+  const kw = $('#kw').value.trim();
+  const model = $('#model').value;
+  if(!key) return $('#msg').textContent = '제미나이 API 키를 입력하세요.';
+  if(!kw) return $('#msg').textContent = '키워드를 입력하세요.';
+
+  const btn = $('#gen');
+  btn.disabled = true; btn.textContent = '생성 중...';
+  $('#msg').textContent = '제미나이가 본문을 작성하는 중...';
+  try{
+    const art = await generate(kw, key, model);
+    $('#title').value = art.title || '';
+    $('#body').value = art.body || '';
+    const labels = ['썸네일','본문 이미지 1','본문 이미지 2'];
+    $('#imgs').innerHTML = (art.imagePrompts||[]).map((p,i)=>`
+      <div class="imgprompt">
+        <div class="l">${labels[i]||'이미지 '+(i+1)}</div>
+        <div>${(p||'').replace(/</g,'&lt;')}</div>
+        <button class="copybtn" data-text="${(p||'').replace(/"/g,'&quot;')}">복사</button>
+      </div>`).join('');
+    $('#imgs').querySelectorAll('.copybtn').forEach(b=>b.addEventListener('click',()=>copy(b.dataset.text,b)));
+    $('#result').style.display = 'block';
+    $('#msg').textContent = '생성 완료 ✓';
+  }catch(e){
+    $('#msg').textContent = '생성 실패: ' + e.message;
+  }finally{
+    btn.disabled=false; btn.textContent='본문 생성';
+  }
+});
+
+document.addEventListener('click',(e)=>{
+  const b = e.target.closest('.copybtn[data-c]');
+  if(!b) return;
+  const map = { title: $('#title').value, body: $('#body').value };
+  copy(map[b.dataset.c]||'', b);
+});
+
+function copy(text, btn){
+  navigator.clipboard.writeText(text).then(()=>{
+    const old=btn.textContent; btn.textContent='복사됨 ✓';
+    setTimeout(()=>btn.textContent=old,1200);
+  });
+}
+</script>
+</body>
+</html>
