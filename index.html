@@ -308,17 +308,17 @@ input,button{font-family:inherit;letter-spacing:inherit;}
       </div>
     </section>
 
-    <!-- 광고 (달력 ↔ 성취 사이) -->
-    <div class="ad-card" id="adCalendar" aria-label="광고"><span class="ad-label">광고</span></div>
-
     <section class="card">
       <h2 class="card-title" id="calMonthLabel">이번 달 성취</h2>
       <div class="cal-summary">
-        <div class="cal-stat"><div class="num ok" id="statSuccess">0</div><div class="lbl">달성</div></div>
-        <div class="cal-stat"><div class="num no" id="statFail">0</div><div class="lbl">초과</div></div>
+        <div class="cal-stat"><div class="num ok" id="statSuccess">O 0</div><div class="lbl">달성</div></div>
+        <div class="cal-stat"><div class="num no" id="statFail">X 0</div><div class="lbl">실패</div></div>
         <div class="cal-stat"><div class="num" id="statRate">0%</div><div class="lbl">달성률</div></div>
       </div>
     </section>
+
+    <!-- 광고 (달력 하단) -->
+    <div class="ad-card" id="adCalendar" aria-label="광고"><span class="ad-label">광고</span></div>
   </section>
 
   <!-- ===== 음식 관리 ===== -->
@@ -623,8 +623,8 @@ function renderCalendar(){
     calGrid.appendChild(cell);
   }
   const total=success+fail;
-  document.getElementById('statSuccess').textContent=success;
-  document.getElementById('statFail').textContent=fail;
+  document.getElementById('statSuccess').textContent='O '+success;
+  document.getElementById('statFail').textContent='X '+fail;
   document.getElementById('statRate').textContent=total>0?Math.round((success/total)*100)+'%':'0%';
 }
 document.getElementById('prevMonth').addEventListener('click',()=>{viewMonth--;if(viewMonth<0){viewMonth=11;viewYear--;}renderCalendar();});
