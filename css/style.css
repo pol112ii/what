@@ -1,31 +1,31 @@
 /* =========================================================
-   칼로리 체크 · 디자인 시스템 (Toss 스타일 / 모바일 퍼스트)
+   칼로리 체크 · 디자인 시스템 (내추럴 제이드 그린 / 모바일 퍼스트)
    ========================================================= */
 @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css");
 
 :root {
   /* 색상 */
-  --bg: #f2f4f6;          /* 연한 회색 배경 */
-  --bg-edge: #e5e8eb;     /* 데스크탑에서 모바일 프레임 바깥 */
+  --bg: #f4f1e8;          /* 따뜻한 크림 배경 */
+  --bg-edge: #e7e3d5;     /* 데스크탑에서 모바일 프레임 바깥 */
   --card: #ffffff;        /* 카드 */
-  --text: #191f28;        /* 기본 텍스트 (거의 검정) */
-  --text-sub: #8b95a1;    /* 보조 텍스트 (회색) */
-  --text-weak: #b0b8c1;   /* 더 옅은 회색 */
-  --line: #f0f2f4;        /* 구분선 */
-  --primary: #3182f6;     /* 메인 블루 */
-  --primary-dark: #2272eb;
-  --primary-weak: #e8f3ff;
-  --success: #2ac769;     /* 달성(초록) */
-  --success-weak: #e7f9ef;
-  --danger: #f04452;      /* 초과/실패(빨강) */
-  --danger-weak: #feeced;
+  --text: #26352c;        /* 기본 텍스트 (딥 그린-차콜) */
+  --text-sub: #7f8a82;    /* 보조 텍스트 (세이지 그레이) */
+  --text-weak: #abb4ab;   /* 더 옅은 회색 */
+  --line: #ece8da;        /* 구분선 */
+  --primary: #42977d;     /* 메인 제이드 그린 */
+  --primary-dark: #37836b;
+  --primary-weak: #e7f1ec;
+  --success: #3f9079;     /* 달성(제이드) */
+  --success-weak: #e6f1ec;
+  --danger: #bf5b43;      /* 초과/실패(테라코타) */
+  --danger-weak: #f6e8e2;
 
   /* 모양 */
   --radius: 20px;
   --radius-sm: 14px;
   --radius-pill: 999px;
-  --shadow: 0 1px 3px rgba(0, 27, 71, 0.04), 0 6px 20px rgba(0, 27, 71, 0.05);
-  --shadow-soft: 0 1px 2px rgba(0, 27, 71, 0.03);
+  --shadow: 0 1px 3px rgba(40, 53, 44, 0.05), 0 6px 20px rgba(40, 53, 44, 0.06);
+  --shadow-soft: 0 1px 2px rgba(40, 53, 44, 0.04);
 
   /* 레이아웃 */
   --app-w: 480px;
@@ -85,39 +85,39 @@ input, button { font-family: inherit; letter-spacing: inherit; }
 .card-head .card-title { margin-bottom: 0; }
 
 /* ===== 대시보드 히어로 (남은 칼로리) ===== */
-.hero { padding: 24px 22px; }
-.hero-label { font-size: 14px; font-weight: 600; color: var(--text-sub); }
+.hero { padding: 24px 22px; background: var(--primary); }
+.hero-label { font-size: 14px; font-weight: 600; color: rgba(255, 255, 255, 0.72); }
 .hero-number {
   display: flex; align-items: baseline; gap: 6px;
   margin: 6px 0 18px;
 }
 .hero-number #remaining {
   font-size: 46px; font-weight: 800; letter-spacing: -0.04em;
-  line-height: 1; color: var(--primary);
+  line-height: 1; color: #fbf8ef;
   font-variant-numeric: tabular-nums;
   transition: color 0.25s;
 }
-.hero-unit { font-size: 18px; font-weight: 700; color: var(--text-sub); }
-.hero.over #remaining { color: var(--danger); }
+.hero-unit { font-size: 18px; font-weight: 700; color: rgba(255, 255, 255, 0.6); }
+.hero.over #remaining { color: #e7b07e; }
 
 /* 게이지 바 */
 .gauge {
-  height: 14px; background: var(--bg);
+  height: 14px; background: rgba(255, 255, 255, 0.2);
   border-radius: var(--radius-pill); overflow: hidden;
 }
 .gauge-fill {
   height: 100%; width: 0%;
-  background: linear-gradient(90deg, #4a9bff, var(--primary));
+  background: linear-gradient(90deg, #fbf6ea, #efe7d2);
   border-radius: var(--radius-pill);
   transition: width 0.45s cubic-bezier(0.22, 1, 0.36, 1), background 0.3s;
 }
-.hero.over .gauge-fill { background: linear-gradient(90deg, #ff7a85, var(--danger)); }
+.hero.over .gauge-fill { background: linear-gradient(90deg, #e8a06f, var(--danger)); }
 .gauge-meta {
   display: flex; justify-content: space-between; align-items: center;
-  margin-top: 10px; font-size: 13px; color: var(--text-sub);
+  margin-top: 10px; font-size: 13px; color: rgba(255, 255, 255, 0.7);
 }
-.gauge-meta .pct { font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
-.hero.over .gauge-meta .pct { color: var(--danger); }
+.gauge-meta .pct { font-weight: 700; color: #fff; font-variant-numeric: tabular-nums; }
+.hero.over .gauge-meta .pct { color: #e7b07e; }
 
 /* ===== 목표 칼로리 행 ===== */
 .goal-card { display: flex; align-items: center; justify-content: space-between; }
@@ -258,7 +258,7 @@ input, button { font-family: inherit; letter-spacing: inherit; }
 .toast {
   position: fixed; left: 50%; bottom: calc(var(--tab-h) + 24px);
   transform: translateX(-50%) translateY(16px);
-  background: rgba(25, 31, 40, 0.92); color: #fff;
+  background: rgba(38, 53, 44, 0.94); color: #fff;
   padding: 13px 22px; border-radius: var(--radius-pill);
   font-size: 14px; font-weight: 600;
   opacity: 0; pointer-events: none; z-index: 300;
@@ -346,7 +346,7 @@ input, button { font-family: inherit; letter-spacing: inherit; }
   flex: 1; text-align: center; padding: 14px 8px;
   background: var(--bg); border-radius: var(--radius-sm);
 }
-.cal-stat .num { font-size: 22px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.cal-stat .num { font-size: 22px; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--primary); }
 .cal-stat .num.ok { color: var(--success); }
 .cal-stat .num.no { color: var(--danger); }
 .cal-stat .lbl { font-size: 12px; color: var(--text-sub); font-weight: 600; margin-top: 2px; }
