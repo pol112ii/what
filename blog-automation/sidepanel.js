@@ -47,12 +47,14 @@ $('#collectBtn').addEventListener('click', async () => {
   btn.disabled = true;
   btn.textContent = '수집 중...';
   try {
-    const collected = await send('collectKeywords');
+    const { keywords: collected, debug } = await send('collectKeywords');
     if (!collected.length) {
-      setStatus('수집된 키워드가 없습니다. 데이터랩 페이지인지 확인하세요.');
+      // 디버그 정보를 보여줘 원인 파악을 돕는다
+      const d = debug ? ` (NEW뱃지 ${debug.newBadges}개, 랭킹항목 ${debug.rankItems}개 감지)` : '';
+      setStatus('수집된 키워드가 없습니다. 데이터랩 페이지인지 확인하세요.' + d);
     } else {
       collected.forEach((kw) => addKeyword(kw, true));
-      setStatus(`${collected.length}개 수집 완료`);
+      setStatus(`${collected.length}개 수집 완료${debug ? ' · ' + debug.methods.join(',') : ''}`);
       render();
     }
   } catch (e) {

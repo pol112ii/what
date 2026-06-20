@@ -46,9 +46,10 @@ async function handle(msg) {
         target: { tabId: tab.id },
         func: scrapeDataLab,
       });
-      const keywords = result || [];
+      const keywords = result?.keywords || [];
       await saveState({ lastCollectedAt: Date.now() });
-      return keywords;
+      // debug 정보도 함께 반환 (수집이 안 될 때 원인 파악용)
+      return { keywords, debug: result?.debug || null };
     }
 
     case 'scoreKeywords': {
