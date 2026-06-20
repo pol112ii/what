@@ -4,7 +4,8 @@
 import { getSettings, saveSettings, getState, saveState } from './lib/storage.js';
 import { scoreKeywords, filterGood } from './lib/competition.js';
 import { scrapeDataLab } from './lib/datalabCollector.js';
-import { collectTrends } from './lib/creatorAdvisor.js';
+import { defaultDate } from './lib/creatorAdvisor.js';
+import { collectTrendsInPage } from './lib/creatorAdvisorInPage.js';
 import { generateArticle } from './lib/gemini.js';
 import { generateImages } from './lib/imageGen.js';
 import { fillEditor, clickPublish } from './lib/blogWriter.js';
@@ -54,8 +55,10 @@ async function handle(msg) {
     }
 
     case 'collectTrends': {
-      // 크리에이터 어드바이저에서 카테고리별 트렌드 키워드 자동 수집 (로그인 쿠키 사용)
-      const result = await collectTrends(msg.payload || {});
+      // 크리에이터 어드바이저 탭 "안에서" 수집 실행 → 로그인 쿠키 자동 적용
+      const opts = msg.payload || {};
+      const date = opts.date || defaultDate();
+      const result = await collectTrendsViaTab({ ...opts, date });
       await saveState({ lastCollectedAt: Date.now() });
       return result;
     }
@@ -239,6 +242,60 @@ async function publishToBlog({ title, body, publish }) {
   }
 
   return { editorReport, publishReport, tabId: tab.id };
+}
+
+// 크리에이터 어드바이저 탭을 찾거나(없으면 새로 열고) 그 안에서 수집 실행
+async function collectTrendsViaTab(opts) {
+  const URLMATCH = 'https://creator-advisor.naver.com/*';
+  let tabs = await chrome.tabs.query({ url: URLMATCH });
+  let tab = tabs[0];
+  let createdTab = false;
+
+  if (!tab) {
+    // 열린 탭이 없으면 백그라운드로 하나 연다
+    tab = await chrome.tabs.create({ url: 'https://creator-advisor.naver.com/', active: false });
+    createdTab = true;
+    await waitForTabComplete(tab.id);
+  }
+
+  try {
+    const [{ result }] = await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      func: collectTrendsInPage,
+      args: [opts],
+    });
+    if (!result) throw new Error('수집 응답이 없습니다.');
+    if (!result.ok) {
+      if (result.error === 'AUTH') {
+        throw new Error('로그인이 필요합니다. 네이버에 로그인했는지, 크리에이터 어드바이저 접근 권한이 있는지 확인하세요.');
+      }
+      throw new Error('수집 실패: ' + result.error);
+    }
+    return result;
+  } finally {
+    // 우리가 연 탭이면 정리
+    if (createdTab) {
+      try { await chrome.tabs.remove(tab.id); } catch { /* 무시 */ }
+    }
+  }
+}
+
+// 탭 로딩 완료 대기 (최대 15초)
+function waitForTabComplete(tabId) {
+  return new Promise((resolve) => {
+    const timeout = setTimeout(() => {
+      chrome.tabs.onUpdated.removeListener(listener);
+      resolve();
+    }, 15000);
+    const listener = (id, info) => {
+      if (id === tabId && info.status === 'complete') {
+        clearTimeout(timeout);
+        chrome.tabs.onUpdated.removeListener(listener);
+        resolve();
+      }
+    };
+    chrome.tabs.onUpdated.addListener(listener);
+  });
 }
 
 function randBetween(min, max) {
