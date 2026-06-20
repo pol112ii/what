@@ -47,14 +47,17 @@ $('#collectBtn').addEventListener('click', async () => {
   btn.disabled = true;
   btn.textContent = '수집 중...';
   try {
-    const { keywords: collected, debug } = await send('collectKeywords');
-    if (!collected.length) {
-      // 디버그 정보를 보여줘 원인 파악을 돕는다
-      const d = debug ? ` (NEW뱃지 ${debug.newBadges}개, 랭킹항목 ${debug.rankItems}개 감지)` : '';
-      setStatus('수집된 키워드가 없습니다. 데이터랩 페이지인지 확인하세요.' + d);
+    // 크리에이터 어드바이저에서 카테고리별 트렌드 키워드 자동 수집
+    const res = await send('collectTrends', {});
+    const list = res.keywords || [];
+    if (!list.length) {
+      setStatus('수집된 키워드가 없습니다. 네이버 로그인 상태를 확인하세요.');
     } else {
-      collected.forEach((kw) => addKeyword(kw, true));
-      setStatus(`${collected.length}개 수집 완료${debug ? ' · ' + debug.methods.join(',') : ''}`);
+      list.forEach((k) =>
+        addKeyword(k.keyword, k.isNew, { category: k.category, rank: k.rank, rankChange: k.rankChange })
+      );
+      const newCnt = list.filter((k) => k.isNew).length;
+      setStatus(`${list.length}개 수집 (${res.categories.length}개 카테고리 · NEW ${newCnt}개 · ${res.date})`);
       render();
     }
   } catch (e) {
@@ -65,9 +68,9 @@ $('#collectBtn').addEventListener('click', async () => {
   }
 });
 
-function addKeyword(kw, isNew) {
+function addKeyword(kw, isNew, meta = {}) {
   if (keywords.some((k) => k.keyword === kw)) return;
-  keywords.push({ keyword: kw, isNew: !!isNew, selected: false, addedAt: Date.now() });
+  keywords.push({ keyword: kw, isNew: !!isNew, selected: false, addedAt: Date.now(), ...meta });
 }
 
 // ---------- 경쟁력 계산 ----------
@@ -121,6 +124,13 @@ function sortedKeywords() {
         return ra - rb;
       });
     case 'category':
+      // 카테고리별 묶고, 그 안에서는 순위(rank) 순
+      return arr.sort((a, b) => {
+        const ca = a.category || '￿';
+        const cb = b.category || '￿';
+        if (ca !== cb) return ca.localeCompare(cb, 'ko');
+        return (a.rank ?? 999) - (b.rank ?? 999);
+      });
     default:
       return arr;
   }
@@ -134,7 +144,7 @@ function render() {
   $('#selCount').textContent = `선택 ${keywords.filter((k) => k.selected).length}`;
 
   if (!items.length) {
-    list.innerHTML = '<div class="empty">키워드가 없습니다. 데이터랩 페이지를 열고 <b>수집</b>을 누르거나,<br />검색창에 직접 입력 후 Enter 로 추가하세요.</div>';
+    list.innerHTML = '<div class="empty">키워드가 없습니다. 네이버 로그인 후 <b>수집</b>을 누르면<br />32개 카테고리 트렌드 키워드를 가져옵니다. (직접 입력 후 Enter 도 가능)</div>';
     return;
   }
 
@@ -148,7 +158,7 @@ function render() {
       ${k.isNew ? '<span class="badge-new">NEW</span>' : ''}
       <span class="kw">${escapeHtml(k.keyword)}</span>
       ${k.label ? `<span class="badge-val">${k.label}</span>` : ''}
-      <span class="time">${timeAgo(k.addedAt)}</span>
+      ${k.category ? `<span class="cat">${escapeHtml(k.category)}</span>` : `<span class="time">${timeAgo(k.addedAt)}</span>`}
     `;
     row.querySelector('input').addEventListener('change', (e) => {
       k.selected = e.target.checked;

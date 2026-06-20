@@ -4,6 +4,7 @@
 import { getSettings, saveSettings, getState, saveState } from './lib/storage.js';
 import { scoreKeywords, filterGood } from './lib/competition.js';
 import { scrapeDataLab } from './lib/datalabCollector.js';
+import { collectTrends } from './lib/creatorAdvisor.js';
 import { generateArticle } from './lib/gemini.js';
 import { generateImages } from './lib/imageGen.js';
 import { fillEditor, clickPublish } from './lib/blogWriter.js';
@@ -50,6 +51,13 @@ async function handle(msg) {
       await saveState({ lastCollectedAt: Date.now() });
       // debug 정보도 함께 반환 (수집이 안 될 때 원인 파악용)
       return { keywords, debug: result?.debug || null };
+    }
+
+    case 'collectTrends': {
+      // 크리에이터 어드바이저에서 카테고리별 트렌드 키워드 자동 수집 (로그인 쿠키 사용)
+      const result = await collectTrends(msg.payload || {});
+      await saveState({ lastCollectedAt: Date.now() });
+      return result;
     }
 
     case 'scoreKeywords': {
