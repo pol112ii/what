@@ -3,7 +3,7 @@
 // 비율이 낮을수록(글은 적고 검색은 많음) 상위노출이 쉬운 "좋은 키워드".
 // 화면에는 박성호님 방식대로 `비율 / 검색량` 으로 표시한다. (예: 0.002 / 61)
 
-import { fetchSearchVolumes } from './naverAd.js';
+import { fetchSearchVolumes, normalizeKey } from './naverAd.js';
 import { fetchBlogDocCount } from './naverSearch.js';
 
 // keywords: string[] → 각 키워드에 검색량/문서수/비율을 채워서 반환
@@ -11,26 +11,31 @@ import { fetchBlogDocCount } from './naverSearch.js';
 export async function scoreKeywords(keywords, settings, onProgress) {
   const results = [];
 
-  // 1) 검색광고 API 로 검색량 일괄 조회 (5개씩 끊어서)
+  // 1) 검색광고 API 로 검색량 일괄 조회 (5개씩 끊어서, 실패 시 1회 재시도)
   const volumes = {};
   for (let i = 0; i < keywords.length; i += 5) {
     const batch = keywords.slice(i, i + 5);
-    try {
-      const vol = await fetchSearchVolumes(batch, settings);
-      Object.assign(volumes, vol);
-    } catch (e) {
-      // 한 배치가 실패해도 나머지는 계속 진행
-      console.warn('검색량 조회 실패:', batch, e.message);
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const vol = await fetchSearchVolumes(batch, settings);
+        Object.assign(volumes, vol);
+        break; // 성공
+      } catch (e) {
+        if (attempt === 0) {
+          await delay(1200); // rate limit 추정 → 잠시 쉬고 재시도
+        } else {
+          console.warn('검색량 조회 실패:', batch, e.message);
+        }
+      }
     }
-    // 검색광고 API rate limit 회피용 짧은 대기
-    await delay(250);
+    // 검색광고 API rate limit 회피용 대기
+    await delay(350);
   }
 
   // 2) 키워드별 블로그 문서수 조회 후 비율 계산
   for (let i = 0; i < keywords.length; i++) {
     const kw = keywords[i];
-    const noSpace = kw.replace(/\s+/g, '');
-    const vol = volumes[noSpace] || volumes[kw] || { total: 0, compIdx: '-' };
+    const vol = volumes[normalizeKey(kw)] || { total: 0, compIdx: '-' };
     let docCount = 0;
     try {
       docCount = await fetchBlogDocCount(kw, settings);

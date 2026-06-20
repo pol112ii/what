@@ -64,7 +64,8 @@ export async function fetchSearchVolumes(keywords, settings) {
     };
     const pc = toNum(row.monthlyPcQcCnt);
     const mobile = toNum(row.monthlyMobileQcCnt);
-    out[row.relKeyword] = {
+    // 공백 제거 + 대문자로 정규화한 키로 저장 (API 는 영어를 대문자로 반환)
+    out[normalizeKey(row.relKeyword)] = {
       pc,
       mobile,
       total: pc + mobile,
@@ -72,4 +73,9 @@ export async function fetchSearchVolumes(keywords, settings) {
     };
   }
   return out;
+}
+
+// 키워드 매칭용 정규화: 공백 제거 + 대문자
+export function normalizeKey(s) {
+  return String(s).replace(/\s+/g, '').toUpperCase();
 }
