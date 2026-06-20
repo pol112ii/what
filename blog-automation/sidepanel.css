@@ -104,6 +104,9 @@ body {
 }
 .filter.active { color: var(--green); border-color: var(--green); }
 
+.legend { color: var(--muted); font-size: 11px; margin-bottom: 10px; }
+.legend b { color: var(--orange); font-weight: 600; }
+
 /* 키워드 리스트 */
 .list { display: flex; flex-direction: column; gap: 8px; }
 .row {
