@@ -246,18 +246,6 @@ input,button{font-family:inherit;letter-spacing:inherit;}
       </div>
     </section>
 
-    <!-- 광고 (홈 인피드: 직접 추가 ↔ 오늘 먹은 기록 사이) -->
-    <aside class="ad-card" aria-label="광고">
-      <span class="ad-label">광고</span>
-      <ins class="adsbygoogle"
-           style="display:block"
-           data-ad-client="ca-pub-9440982975556344"
-           data-ad-slot="5846209263"
-           data-ad-format="auto"
-           data-full-width-responsive="true"></ins>
-      <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-    </aside>
-
     <section class="card">
       <div class="card-head">
         <h2 class="card-title">오늘 먹은 기록</h2>
@@ -265,6 +253,9 @@ input,button{font-family:inherit;letter-spacing:inherit;}
       </div>
       <ul id="list" class="meal-list"></ul>
     </section>
+
+    <!-- 광고 (홈 하단) -->
+    <div class="ad-card" id="adHome" aria-label="광고"><span class="ad-label">광고</span></div>
   </section>
 
   <!-- ===== 칼로리 체크 ===== -->
@@ -289,6 +280,9 @@ input,button{font-family:inherit;letter-spacing:inherit;}
       <button id="calcAddBtn" type="button" class="btn-primary btn-block" disabled>오늘 기록에 추가하기</button>
     </section>
     <ul id="foodResults" class="food-results"></ul>
+
+    <!-- 광고 (칼로리 체크: 음식 목록 아래) -->
+    <div class="ad-card" id="adSearch" aria-label="광고"><span class="ad-label">광고</span></div>
   </section>
 
   <!-- ===== 달력 ===== -->
@@ -313,6 +307,10 @@ input,button{font-family:inherit;letter-spacing:inherit;}
         <span><span class="dot no">X</span> 목표 초과</span>
       </div>
     </section>
+
+    <!-- 광고 (달력 ↔ 성취 사이) -->
+    <div class="ad-card" id="adCalendar" aria-label="광고"><span class="ad-label">광고</span></div>
+
     <section class="card">
       <h2 class="card-title" id="calMonthLabel">이번 달 성취</h2>
       <div class="cal-summary">
@@ -635,12 +633,29 @@ document.getElementById('nextMonth').addEventListener('click',()=>{viewMonth++;i
 /* =========================================================
    7) 탭 전환
    ========================================================= */
+// 광고: 해당 탭이 화면에 보일 때 1회만 주입 (SPA에서 숨겨진 광고는 폭 0이라 렌더 실패)
+function loadAd(boxId){
+  const box=document.getElementById(boxId);
+  if(!box || box.dataset.adLoaded) return;
+  if(box.offsetWidth===0) return; // 아직 안 보이면 보류
+  box.dataset.adLoaded='1';
+  const ins=document.createElement('ins');
+  ins.className='adsbygoogle';
+  ins.style.display='block';
+  ins.setAttribute('data-ad-client','ca-pub-9440982975556344');
+  ins.setAttribute('data-ad-slot','5846209263');
+  ins.setAttribute('data-ad-format','auto');
+  ins.setAttribute('data-full-width-responsive','true');
+  box.appendChild(ins);
+  try{ (window.adsbygoogle=window.adsbygoogle||[]).push({}); }catch(e){}
+}
+
 function showView(name){
   document.querySelectorAll('.view').forEach(s=>{s.hidden=(s.dataset.view!==name);});
   document.querySelectorAll('.tab-item').forEach(t=>t.classList.toggle('active',t.dataset.tab===name));
-  if(name==='home')renderHome();
-  else if(name==='search')initSearchView();
-  else if(name==='calendar')renderCalendar();
+  if(name==='home'){renderHome();loadAd('adHome');}
+  else if(name==='search'){initSearchView();loadAd('adSearch');}
+  else if(name==='calendar'){renderCalendar();loadAd('adCalendar');}
   else if(name==='foods')loadFoods();
   window.scrollTo(0,0);
 }
@@ -650,6 +665,7 @@ document.querySelector('.tab-bar').addEventListener('click',e=>{
 
 /* 초기 화면 */
 renderHome();
+loadAd('adHome');
 </script>
 </body>
 </html>
