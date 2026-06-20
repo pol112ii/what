@@ -1,13 +1,17 @@
 {
   "manifest_version": 3,
   "name": "블로그 자동화 - 키워드 수집기",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "description": "네이버 트렌드 키워드 수집 + 경쟁력(비율/검색량) 분석 + 글쓰기 자동화",
   "permissions": [
     "storage",
     "sidePanel",
     "activeTab",
-    "scripting"
+    "scripting",
+    "alarms",
+    "notifications",
+    "tabs",
+    "unlimitedStorage"
   ],
   "host_permissions": [
     "https://datalab.naver.com/*",
