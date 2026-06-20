@@ -3,22 +3,27 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#f2f4f6">
+<meta name="theme-color" content="#2f4a3a">
 <title>칼로리 체크</title>
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@700;800&display=swap" rel="stylesheet">
 <style>
 /* =========================================================
    칼로리 체크 · 단일 파일 (Toss 스타일 / 모바일 퍼스트)
    ========================================================= */
 :root{
-  --bg:#f2f4f6; --bg-edge:#e5e8eb; --card:#fff;
-  --text:#191f28; --text-sub:#8b95a1; --text-weak:#b0b8c1; --line:#f0f2f4;
-  --primary:#3182f6; --primary-dark:#2272eb; --primary-weak:#e8f3ff;
-  --success:#2ac769; --success-weak:#e7f9ef; --danger:#f04452; --danger-weak:#feeced;
+  --bg:#f4f1e8; --bg-edge:#e7e3d5; --card:#ffffff;
+  --text:#26352c; --text-sub:#828b80; --text-weak:#adb4a6; --line:#ece8da;
+  --primary:#2f4a3a; --primary-dark:#243a2d; --primary-weak:#e8eee9;
+  --accent:#c2a35f; --accent-weak:#f1e9d4;
+  --success:#2f7d57; --success-weak:#e7efe9; --danger:#b5533f; --danger-weak:#f5e7e2;
   --radius:20px; --radius-sm:14px; --radius-pill:999px;
-  --shadow:0 1px 3px rgba(0,27,71,.04),0 6px 20px rgba(0,27,71,.05);
-  --shadow-soft:0 1px 2px rgba(0,27,71,.03);
+  --shadow:0 1px 3px rgba(40,53,44,.05),0 6px 20px rgba(40,53,44,.06);
+  --shadow-soft:0 1px 2px rgba(40,53,44,.04);
   --app-w:480px; --tab-h:64px;
+  --serif:"Nanum Myeongjo",serif;
   font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,system-ui,Roboto,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -34,7 +39,7 @@ input,button{font-family:inherit;letter-spacing:inherit;}
 
 .top{padding:18px 4px 2px;}
 .top-date{font-size:13px;color:var(--text-sub);font-weight:600;}
-.top-title{font-size:24px;font-weight:700;letter-spacing:-.03em;margin-top:2px;}
+.top-title{font-family:var(--serif);font-size:25px;font-weight:800;letter-spacing:-.01em;margin-top:3px;}
 .top-sub{font-size:14px;color:var(--text-sub);margin-top:4px;}
 
 .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;}
@@ -42,20 +47,20 @@ input,button{font-family:inherit;letter-spacing:inherit;}
 .card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
 .card-head .card-title{margin-bottom:0;}
 
-.hero{padding:24px 22px;}
-.hero-label{font-size:14px;font-weight:600;color:var(--text-sub);}
+.hero{padding:24px 22px;background:var(--primary);border:1px solid rgba(255,255,255,.04);}
+.hero-label{font-size:14px;font-weight:600;color:rgba(255,255,255,.72);}
 .hero-number{display:flex;align-items:baseline;gap:6px;margin:6px 0 18px;}
 .hero-number #remaining{font-size:46px;font-weight:800;letter-spacing:-.04em;line-height:1;
-  color:var(--primary);font-variant-numeric:tabular-nums;transition:color .25s;}
-.hero-unit{font-size:18px;font-weight:700;color:var(--text-sub);}
-.hero.over #remaining{color:var(--danger);}
-.gauge{height:14px;background:var(--bg);border-radius:var(--radius-pill);overflow:hidden;}
-.gauge-fill{height:100%;width:0%;background:linear-gradient(90deg,#4a9bff,var(--primary));
+  color:#fbf8ef;font-variant-numeric:tabular-nums;transition:color .25s;}
+.hero-unit{font-size:18px;font-weight:700;color:rgba(255,255,255,.6);}
+.hero.over #remaining{color:#e7b07e;}
+.gauge{height:14px;background:rgba(255,255,255,.2);border-radius:var(--radius-pill);overflow:hidden;}
+.gauge-fill{height:100%;width:0%;background:linear-gradient(90deg,#e4d2a0,var(--accent));
   border-radius:var(--radius-pill);transition:width .45s cubic-bezier(.22,1,.36,1),background .3s;}
-.hero.over .gauge-fill{background:linear-gradient(90deg,#ff7a85,var(--danger));}
-.gauge-meta{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:13px;color:var(--text-sub);}
-.gauge-meta .pct{font-weight:700;color:var(--text);font-variant-numeric:tabular-nums;}
-.hero.over .gauge-meta .pct{color:var(--danger);}
+.hero.over .gauge-fill{background:linear-gradient(90deg,#e8a06f,var(--danger));}
+.gauge-meta{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:13px;color:rgba(255,255,255,.7);}
+.gauge-meta .pct{font-weight:700;color:#fff;font-variant-numeric:tabular-nums;}
+.hero.over .gauge-meta .pct{color:#e7b07e;}
 
 .goal-card{display:flex;align-items:center;justify-content:space-between;}
 .goal-card .goal-label{font-size:15px;font-weight:600;}
@@ -131,7 +136,7 @@ input,button{font-family:inherit;letter-spacing:inherit;}
 .calc-result .calc-kcal{font-size:32px;font-weight:800;color:var(--primary);letter-spacing:-.03em;font-variant-numeric:tabular-nums;}
 
 .toast{position:fixed;left:50%;bottom:calc(var(--tab-h) + 24px);transform:translateX(-50%) translateY(16px);
-  background:rgba(25,31,40,.92);color:#fff;padding:13px 22px;border-radius:var(--radius-pill);
+  background:rgba(38,53,44,.94);color:#fff;padding:13px 22px;border-radius:var(--radius-pill);
   font-size:14px;font-weight:600;opacity:0;pointer-events:none;z-index:300;backdrop-filter:blur(8px);transition:opacity .25s,transform .25s;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
@@ -153,7 +158,7 @@ input,button{font-family:inherit;letter-spacing:inherit;}
 /* 달력 */
 .cal-card{padding:20px 16px 22px;}
 .cal-head{display:flex;align-items:center;justify-content:space-between;padding:0 6px;margin-bottom:16px;}
-.cal-title{font-size:17px;font-weight:700;font-variant-numeric:tabular-nums;}
+.cal-title{font-family:var(--serif);font-size:18px;font-weight:800;font-variant-numeric:tabular-nums;}
 .cal-nav{width:36px;height:36px;border-radius:12px;border:none;background:var(--bg);color:var(--text);
   font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s,transform .08s;}
 .cal-nav:hover{background:#e5e8eb;}
@@ -176,7 +181,7 @@ input,button{font-family:inherit;letter-spacing:inherit;}
 .cal-cell.today .cal-day{color:var(--primary);font-weight:800;}
 .cal-summary{display:flex;gap:10px;margin-top:18px;}
 .cal-stat{flex:1;text-align:center;padding:14px 8px;background:var(--bg);border-radius:var(--radius-sm);}
-.cal-stat .num{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums;}
+.cal-stat .num{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--accent);}
 .cal-stat .num.ok{color:var(--success);}
 .cal-stat .num.no{color:var(--danger);}
 .cal-stat .lbl{font-size:12px;color:var(--text-sub);font-weight:600;margin-top:2px;}
