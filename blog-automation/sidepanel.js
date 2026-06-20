@@ -26,7 +26,7 @@ $$('.tab').forEach((tab) => {
     $$('.panel').forEach((p) => p.classList.remove('active'));
     tab.classList.add('active');
     $(`#tab-${tab.dataset.tab}`).classList.add('active');
-    if (tab.dataset.tab === 'analytics') loadWriteLog();
+    if (tab.dataset.tab === 'analytics') { loadWriteLog(); loadDrafts(); }
     if (tab.dataset.tab === 'settings') loadSettings();
     if (tab.dataset.tab === 'write') populateWriteKeywords();
   });
@@ -335,6 +335,28 @@ async function loadWriteLog() {
   box.innerHTML = log
     .map((l) => `<div class="logitem">${escapeHtml(l.keyword)} <span class="muted">· ${new Date(l.at).toLocaleString('ko')}</span></div>`)
     .join('');
+}
+
+// ---------- 초안 목록 ----------
+async function loadDrafts() {
+  const drafts = await send('getDrafts');
+  const box = $('#draftList');
+  if (!drafts.length) { box.innerHTML = '<p class="muted">아직 초안이 없습니다.</p>'; return; }
+  box.innerHTML = drafts.map((d) => `
+    <div class="logitem">
+      <b>${escapeHtml(d.title || d.keyword)}</b>
+      <span class="muted">· ${escapeHtml(d.keyword)} · ${new Date(d.createdAt).toLocaleString('ko')}</span>
+      <button class="copybtn" data-draft="${d.id}">본문 복사</button>
+      <button class="copybtn" data-deldraft="${d.id}">삭제</button>
+    </div>`).join('');
+  box.querySelectorAll('[data-draft]').forEach((b) => b.addEventListener('click', () => {
+    const d = drafts.find((x) => x.id == b.dataset.draft);
+    if (d) copyText(`${d.title}\n\n${d.body}`, b);
+  }));
+  box.querySelectorAll('[data-deldraft]').forEach((b) => b.addEventListener('click', async () => {
+    await send('deleteDraft', { id: Number(b.dataset.deldraft) });
+    loadDrafts();
+  }));
 }
 
 // ---------- 유틸 ----------
