@@ -21,6 +21,18 @@ export function defaultDate() {
   return ymd(d);
 }
 
+// 시도할 날짜 후보 (어제부터 과거로 n일). 데이터 지연 대비 폴백용.
+export function candidateDates(n = 3) {
+  const out = [];
+  const base = new Date();
+  for (let i = 1; i <= n; i++) {
+    const d = new Date(base);
+    d.setDate(d.getDate() - i);
+    out.push(ymd(d));
+  }
+  return out;
+}
+
 async function getJson(url) {
   const res = await fetch(url, { credentials: 'include' });
   if (res.status === 401 || res.status === 403) {

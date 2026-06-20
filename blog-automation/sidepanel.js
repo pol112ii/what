@@ -301,11 +301,11 @@ $('#autoStop').addEventListener('click', async () => {
 
 async function refreshAutoStatus() {
   const st = await send('getAutoStatus');
+  // 자동 스케줄러가 돌 때만 상태줄을 갱신한다.
+  // (수집 결과/에러 메시지를 주기적 갱신이 덮어쓰지 않도록)
   if (st.running) {
     const next = st.nextRunAt ? new Date(st.nextRunAt).toLocaleTimeString('ko') : '-';
     setStatus(`진행 중 · 큐 ${st.queue.length}개 남음 · 다음 ${next}`);
-  } else {
-    setStatus(st.queue && st.queue.length ? `중단됨 · 큐 ${st.queue.length}개 남음` : '대기 중');
   }
 }
 

@@ -4,7 +4,7 @@
 import { getSettings, saveSettings, getState, saveState } from './lib/storage.js';
 import { scoreKeywords, filterGood } from './lib/competition.js';
 import { scrapeDataLab } from './lib/datalabCollector.js';
-import { defaultDate } from './lib/creatorAdvisor.js';
+import { defaultDate, candidateDates } from './lib/creatorAdvisor.js';
 import { collectTrendsInPage } from './lib/creatorAdvisorInPage.js';
 import { generateArticle } from './lib/gemini.js';
 import { generateImages } from './lib/imageGen.js';
@@ -57,8 +57,8 @@ async function handle(msg) {
     case 'collectTrends': {
       // 크리에이터 어드바이저 탭 "안에서" 수집 실행 → 로그인 쿠키 자동 적용
       const opts = msg.payload || {};
-      const date = opts.date || defaultDate();
-      const result = await collectTrendsViaTab({ ...opts, date });
+      const dates = opts.date ? [opts.date] : candidateDates(3);
+      const result = await collectTrendsViaTab({ ...opts, dates });
       await saveState({ lastCollectedAt: Date.now() });
       return result;
     }
@@ -263,13 +263,17 @@ async function collectTrendsViaTab(opts) {
       target: { tabId: tab.id },
       func: collectTrendsInPage,
       args: [opts],
+      world: 'MAIN', // 페이지와 동일한 컨텍스트에서 fetch (쿠키/헤더 동일)
     });
-    if (!result) throw new Error('수집 응답이 없습니다.');
+    if (!result) throw new Error('수집 응답이 없습니다. 페이지를 새로고침하고 다시 시도하세요.');
     if (!result.ok) {
-      if (result.error === 'AUTH') {
-        throw new Error('로그인이 필요합니다. 네이버에 로그인했는지, 크리에이터 어드바이저 접근 권한이 있는지 확인하세요.');
+      if (result.status === 401 || result.status === 403) {
+        throw new Error(`로그인이 필요합니다 (HTTP ${result.status}). 트렌드 페이지를 새로고침한 뒤 다시 시도하세요.`);
       }
-      throw new Error('수집 실패: ' + result.error);
+      if (result.error === 'empty-categories') {
+        throw new Error('해당 날짜에 트렌드 데이터가 없습니다. 트렌드 페이지에서 날짜를 확인하세요.');
+      }
+      throw new Error(`수집 실패: ${result.error}${result.status ? ' (HTTP ' + result.status + ')' : ''}`);
     }
     return result;
   } finally {
