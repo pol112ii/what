@@ -1,10 +1,14 @@
-// 서비스 워커: 사이드패널 ↔ 네이버 API 사이의 중계자.
+// 서비스 워커: 사이드패널 ↔ 네이버 API/탭 사이의 중계자 + 자동 스케줄러.
 // API 호출은 여기(백그라운드)에서 해야 host_permissions 로 CORS 를 우회할 수 있다.
 
 import { getSettings, saveSettings, getState, saveState } from './lib/storage.js';
 import { scoreKeywords, filterGood } from './lib/competition.js';
 import { scrapeDataLab } from './lib/datalabCollector.js';
 import { generateArticle } from './lib/gemini.js';
+import { generateImages } from './lib/imageGen.js';
+import { fillEditor, clickPublish } from './lib/blogWriter.js';
+
+const ALARM = 'ba-auto-write';
 
 // 아이콘 클릭 시 사이드패널 열기
 chrome.action.onClicked.addListener(async (tab) => {
@@ -19,6 +23,11 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
   return true; // 비동기 응답 유지
 });
 
+// 자동 스케줄러 알람
+chrome.alarms.onAlarm.addListener(async (alarm) => {
+  if (alarm.name === ALARM) await runOnce();
+});
+
 async function handle(msg) {
   switch (msg.type) {
     case 'getSettings':
@@ -29,7 +38,6 @@ async function handle(msg) {
       return getState();
 
     case 'collectKeywords': {
-      // 현재 활성 탭(데이터랩)에서 키워드 긁어오기
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
       if (!tab || !/datalab\.naver\.com/.test(tab.url || '')) {
         throw new Error('네이버 데이터랩(datalab.naver.com) 페이지를 먼저 연 뒤 다시 시도하세요.');
@@ -44,7 +52,6 @@ async function handle(msg) {
     }
 
     case 'scoreKeywords': {
-      // 키워드 배열을 받아 경쟁력 계산
       const settings = await getSettings();
       const results = await scoreKeywords(msg.payload.keywords, settings);
       const state = await saveState({ keywords: results });
@@ -52,13 +59,39 @@ async function handle(msg) {
     }
 
     case 'generateArticle': {
-      // 키워드 1개로 제미나이가 본문 + 이미지 프롬프트 생성
       const settings = await getSettings();
       return generateArticle(msg.payload.keyword, settings);
     }
 
+    case 'generateImages': {
+      // prompts 배열로 이미지 생성 (설정의 imageApi 방식 사용)
+      const settings = await getSettings();
+      return generateImages(msg.payload.prompts, settings, msg.payload.aspectRatios);
+    }
+
+    case 'publishToBlog': {
+      // 현재 블로그 글쓰기 탭에 제목/본문 입력 (+옵션 발행)
+      return publishToBlog(msg.payload);
+    }
+
+    case 'saveDraft': {
+      // 생성 결과를 초안으로 저장
+      const state = await getState();
+      const draft = { id: Date.now(), createdAt: Date.now(), status: 'draft', ...msg.payload };
+      const drafts = [draft, ...(state.drafts || [])].slice(0, 200);
+      await saveState({ drafts });
+      return drafts;
+    }
+    case 'getDrafts':
+      return (await getState()).drafts || [];
+    case 'deleteDraft': {
+      const state = await getState();
+      const drafts = (state.drafts || []).filter((d) => d.id !== msg.payload.id);
+      await saveState({ drafts });
+      return drafts;
+    }
+
     case 'logWrite': {
-      // 글쓰기 기록 남기기
       const state = await getState();
       const writeLog = [
         { keyword: msg.payload.keyword, at: Date.now() },
@@ -68,7 +101,150 @@ async function handle(msg) {
       return writeLog;
     }
 
+    // ----- 자동 스케줄러 -----
+    case 'startAuto': {
+      const { keywords, min, max, autoPublish } = msg.payload;
+      await saveState({
+        autoQueue: keywords || [],
+        autoRunning: true,
+        autoConfig: { min: min || 10, max: max || 12, autoPublish: !!autoPublish },
+        nextRunAt: Date.now() + 2000,
+      });
+      // 첫 작업은 바로 실행
+      runOnce();
+      return getAutoStatus();
+    }
+    case 'stopAuto': {
+      await chrome.alarms.clear(ALARM);
+      await saveState({ autoRunning: false, nextRunAt: null });
+      return getAutoStatus();
+    }
+    case 'getAutoStatus':
+      return getAutoStatus();
+
     default:
       throw new Error(`알 수 없는 요청: ${msg.type}`);
+  }
+}
+
+async function getAutoStatus() {
+  const s = await getState();
+  return {
+    running: !!s.autoRunning,
+    queue: s.autoQueue || [],
+    nextRunAt: s.nextRunAt || null,
+    config: s.autoConfig || null,
+  };
+}
+
+// 큐에서 키워드 하나를 꺼내 생성→(옵션)발행→초안 저장→다음 예약
+async function runOnce() {
+  const settings = await getSettings();
+  let state = await getState();
+  if (!state.autoRunning) return;
+
+  const queue = state.autoQueue || [];
+  if (!queue.length) {
+    await saveState({ autoRunning: false, nextRunAt: null });
+    notify('자동 글쓰기 완료', '큐의 모든 키워드를 처리했습니다.');
+    return;
+  }
+
+  const keyword = queue[0];
+  const restQueue = queue.slice(1);
+  await saveState({ autoQueue: restQueue });
+
+  try {
+    // 1) 본문 생성
+    const art = await generateArticle(keyword, settings);
+    // 2) 이미지 생성 (수동 모드면 빈 결과)
+    let images = [];
+    try {
+      images = await generateImages(art.imagePrompts || [], settings, ['1:1', '4:3', '4:3']);
+    } catch (e) {
+      console.warn('이미지 생성 실패:', e.message);
+    }
+    // 3) 초안 저장
+    const draft = {
+      id: Date.now(), createdAt: Date.now(), status: 'draft',
+      keyword, title: art.title, body: art.body, imagePrompts: art.imagePrompts, images,
+    };
+    const drafts = [draft, ...(state.drafts || [])].slice(0, 200);
+    await saveState({ drafts });
+    // 4) 기록
+    await handle({ type: 'logWrite', payload: { keyword } });
+
+    // 5) 자동 발행 옵션
+    if (state.autoConfig?.autoPublish) {
+      try {
+        await publishToBlog({ title: art.title, body: art.body, publish: true });
+      } catch (e) {
+        console.warn('자동 발행 실패:', e.message);
+      }
+    }
+    notify('초안 생성됨', `"${keyword}" 글이 준비되었습니다.`);
+  } catch (e) {
+    notify('생성 실패', `"${keyword}": ${e.message}`);
+  }
+
+  // 6) 다음 작업 예약 (남은 큐가 있을 때만)
+  state = await getState();
+  if (state.autoRunning && (state.autoQueue || []).length) {
+    const { min, max } = state.autoConfig || { min: 10, max: 12 };
+    const delayMin = randBetween(min, max);
+    const when = Date.now() + delayMin * 60 * 1000;
+    await chrome.alarms.create(ALARM, { when });
+    await saveState({ nextRunAt: when });
+  } else {
+    await saveState({ autoRunning: false, nextRunAt: null });
+    if (state.autoRunning) notify('자동 글쓰기 완료', '큐의 모든 키워드를 처리했습니다.');
+  }
+}
+
+// 블로그 글쓰기 탭에 입력/발행
+async function publishToBlog({ title, body, publish }) {
+  const tabs = await chrome.tabs.query({ url: ['https://blog.naver.com/*'] });
+  // 활성 탭 우선, 없으면 첫 블로그 탭
+  const [active] = await chrome.tabs.query({ active: true, currentWindow: true });
+  const tab = (active && /blog\.naver\.com/.test(active.url || '')) ? active : tabs[0];
+  if (!tab) {
+    throw new Error('네이버 블로그 글쓰기 페이지를 먼저 연 뒤 다시 시도하세요.');
+  }
+
+  // 에디터가 iframe 안에 있으므로 모든 프레임에서 실행
+  const fillReports = await chrome.scripting.executeScript({
+    target: { tabId: tab.id, allFrames: true },
+    func: fillEditor,
+    args: [{ title, body }],
+  });
+  const editorReport = fillReports.map((r) => r.result).find((r) => r && r.isEditor) || null;
+
+  let publishReport = null;
+  if (publish) {
+    const pubReports = await chrome.scripting.executeScript({
+      target: { tabId: tab.id, allFrames: true },
+      func: clickPublish,
+      args: [true],
+    });
+    publishReport = pubReports.map((r) => r.result).find((r) => r && r.steps?.length) || null;
+  }
+
+  return { editorReport, publishReport, tabId: tab.id };
+}
+
+function randBetween(min, max) {
+  return min + Math.random() * (max - min);
+}
+
+function notify(title, message) {
+  try {
+    chrome.notifications.create({
+      type: 'basic',
+      iconUrl: 'icons/icon48.png',
+      title,
+      message,
+    });
+  } catch {
+    /* 알림 권한 없으면 무시 */
   }
 }

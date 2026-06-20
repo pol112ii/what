@@ -211,6 +211,9 @@ body {
 }
 .imgprompt-label { color: var(--green); font-size: 11px; margin-bottom: 4px; }
 .imgprompt-text { font-size: 12px; line-height: 1.5; margin-bottom: 8px; }
+.imgresults { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+.imgresults .thumb { width: 90px; height: 90px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border); }
+.imgerr { color: #f87171; font-size: 11px; }
 
 /* 예정 안내 */
 .todo { color: var(--text); line-height: 1.7; }

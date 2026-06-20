@@ -67,8 +67,17 @@
       <label class="fieldlabel">본문 <button class="copybtn" data-copy="body">복사</button></label>
       <textarea id="genBody" rows="14"></textarea>
 
-      <label class="fieldlabel">🖼️ 이미지 프롬프트 (제미나이에 붙여넣어 생성)</label>
+      <label class="fieldlabel">🖼️ 이미지 프롬프트 (제미나이에 붙여넣어 생성)
+        <button id="genImgBtn" class="copybtn">이미지 생성</button>
+      </label>
       <div id="imgPrompts"></div>
+      <div id="imgResults" class="imgresults"></div>
+
+      <div class="bottombar" style="margin-top:16px">
+        <button id="fillBtn" class="btn-green">블로그에 입력</button>
+        <button id="publishBtn" class="chip">입력+발행</button>
+      </div>
+      <p class="hint">네이버 블로그 글쓰기 페이지를 연 상태에서 눌러야 합니다.</p>
     </div>
     <p class="hint" id="genMsg"></p>
   </section>

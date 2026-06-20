@@ -223,6 +223,80 @@ function copyText(text, btn) {
   });
 }
 
+// ---------- 이미지 자동 생성 (3단계) ----------
+$('#genImgBtn').addEventListener('click', async () => {
+  if (!lastGen || !(lastGen.imagePrompts || []).length) return ($('#genMsg').textContent = '먼저 본문을 생성하세요.');
+  const btn = $('#genImgBtn');
+  btn.disabled = true; btn.textContent = '생성 중...';
+  try {
+    const imgs = await send('generateImages', { prompts: lastGen.imagePrompts, aspectRatios: ['1:1', '4:3', '4:3'] });
+    renderImageResults(imgs);
+    $('#genMsg').textContent = imgs.some((i) => i.manual)
+      ? '수동 모드: 프롬프트를 제미나이 웹에 붙여넣어 생성하세요.'
+      : '이미지 생성 완료 ✓';
+  } catch (e) {
+    $('#genMsg').textContent = '이미지 생성 실패: ' + e.message;
+  } finally {
+    btn.disabled = false; btn.textContent = '이미지 생성';
+  }
+});
+
+function renderImageResults(imgs) {
+  const box = $('#imgResults');
+  box.innerHTML = imgs.map((im) => {
+    if (im.dataUrl) return `<a href="${im.dataUrl}" download="image.png"><img class="thumb" src="${im.dataUrl}" /></a>`;
+    if (im.error) return `<div class="imgerr">생성 실패: ${escapeHtml(im.error)}</div>`;
+    return '';
+  }).join('');
+}
+
+// ---------- 블로그 입력/발행 (4단계) ----------
+$('#fillBtn').addEventListener('click', () => doPublish(false));
+$('#publishBtn').addEventListener('click', () => doPublish(true));
+
+async function doPublish(publish) {
+  const title = $('#genTitle').value;
+  const body = $('#genBody').value;
+  if (!body) return ($('#genMsg').textContent = '먼저 본문을 생성하세요.');
+  $('#genMsg').textContent = publish ? '블로그 입력+발행 시도 중...' : '블로그에 입력 중...';
+  try {
+    const res = await send('publishToBlog', { title, body, publish });
+    if (!res.editorReport) {
+      $('#genMsg').textContent = '에디터를 찾지 못했습니다. 블로그 글쓰기 페이지가 열려 있는지 확인하세요.';
+    } else {
+      const steps = res.editorReport.steps.map((s) => Object.entries(s)[0].join(':')).join(', ');
+      $('#genMsg').textContent = `입력 결과 — ${steps}`;
+    }
+  } catch (e) {
+    $('#genMsg').textContent = '실패: ' + e.message;
+  }
+}
+
+// ---------- 자동 스케줄러 (5단계) ----------
+$('#autoRun').addEventListener('click', async () => {
+  const targets = keywords.filter((k) => k.selected).map((k) => k.keyword);
+  if (!targets.length) return setStatus('자동 글쓰기할 키워드를 체크하세요.');
+  const min = parseInt($('#intervalMin').value, 10) || 10;
+  const max = parseInt($('#intervalMax').value, 10) || 12;
+  await send('startAuto', { keywords: targets, min, max, autoPublish: false });
+  refreshAutoStatus();
+});
+
+$('#autoStop').addEventListener('click', async () => {
+  await send('stopAuto');
+  refreshAutoStatus();
+});
+
+async function refreshAutoStatus() {
+  const st = await send('getAutoStatus');
+  if (st.running) {
+    const next = st.nextRunAt ? new Date(st.nextRunAt).toLocaleTimeString('ko') : '-';
+    setStatus(`진행 중 · 큐 ${st.queue.length}개 남음 · 다음 ${next}`);
+  } else {
+    setStatus(st.queue && st.queue.length ? `중단됨 · 큐 ${st.queue.length}개 남음` : '대기 중');
+  }
+}
+
 // ---------- 설정 ----------
 async function loadSettings() {
   const s = await send('getSettings');
@@ -279,3 +353,6 @@ function timeAgo(ts) {
 }
 
 render();
+refreshAutoStatus();
+// 자동 진행 중이면 상태를 주기적으로 갱신
+setInterval(refreshAutoStatus, 15000);
